@@ -2,8 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-        xmlns:viewmodels="clr-namespace:Texode.Wpf.Tracker.ViewModels" 
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewmodels="clr-namespace:Texode.Wpf.Tracker.ViewModels"
         d:DataContext="{d:DesignInstance Type=viewmodels:MainWindowViewModel}"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
@@ -17,12 +17,12 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Button Grid.Column="0" Grid.Row="0" Command="{Binding AddCommand}">Загрузить данные</Button>
+        <Button Grid.Column="0" Grid.Row="0" Panel.ZIndex="0" Command="{Binding AddCommand}">Загрузить данные</Button>
 
-        <!--<Canvas Grid.Column="1" Grid.Row="0">
-            <Button Command="{Binding AddCommand}" Canvas.Left="10" Width="250" Panel.ZIndex="1" Height="28">Экспортировать выбранного пользователя</Button>
-            <Button Command="{Binding AddCommand}" Canvas.Right="10" Width="250" Panel.ZIndex="2" Height="28" Canvas.Left="273">Экспортировать всех пользователей</Button>
-        </Canvas>-->
+        <Canvas Grid.Column="1" Grid.Row="0">
+            <Button Command="{Binding AddCommand}" Canvas.Left="10" Panel.ZIndex="1" >Экспортировать выбранного пользователя</Button>
+            <Button Command="{Binding AddCommand}" Canvas.Right="10" Panel.ZIndex="2" Canvas.Left="273">Экспортировать всех пользователей</Button>
+        </Canvas>
 
         <ListBox Grid.Column="0" Grid.Row="1" ItemsSource="{Binding Users}"
                  SelectedItem="{Binding SelectedUser}"
@@ -30,10 +30,10 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Margin="5">
-                        <TextBlock FontSize="18" Text="{Binding Path=Name}" />
-                        <TextBlock Text="{Binding Path=AverageSteps}" />
-                        <TextBlock Text="{Binding Path=BestRezult}" />
-                        <TextBlock Text="{Binding Path=WorstResult}" />
+                        <TextBlock FontSize="15" Text="{Binding Path=Name}" />
+                        <TextBlock><Run Text="Average: " /><Run Text="{Binding Path=AverageSteps}" /></TextBlock>
+                        <TextBlock><Run Text="Best: " /><Run Text="{Binding Path=BestRezult}" /></TextBlock>
+                        <TextBlock><Run Text="Worst: " /><Run Text="{Binding Path=WorstResult}" /></TextBlock>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
