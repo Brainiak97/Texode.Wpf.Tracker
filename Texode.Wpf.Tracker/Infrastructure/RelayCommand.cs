@@ -5,33 +5,32 @@ namespace Texode.Wpf.Tracker.Infrastructure
 {
     public class RelayCommand : ICommand
     {
-        private readonly Action _targetExecuteMethod;
-        private readonly bool _targetCanExecuteMethod;
+        private readonly Action _execute;
+        private readonly bool _canExecute;
 
         public RelayCommand(Action executeMethod)
         {
-            _targetExecuteMethod = executeMethod;
+            _execute = executeMethod;
         }
 
         public RelayCommand(Action executeMethod, bool canExecuteMethod)
         {
-            _targetExecuteMethod = executeMethod;
-            _targetCanExecuteMethod = canExecuteMethod;
+            _execute = executeMethod;
+            _canExecute = canExecuteMethod;
         }
 
         public void RaiseCanExecuteChanged()
         {
             CanExecuteChanged(this, EventArgs.Empty);
         }
-        #region ICommand Members
 
         bool ICommand.CanExecute(object parameter)
         {
-            if (_targetCanExecuteMethod)
+            if (_canExecute)
             {
-                return _targetCanExecuteMethod;
+                return _canExecute;
             }
-            if (_targetExecuteMethod != null)
+            if (_execute != null)
             {
                 return true;
             }
@@ -42,8 +41,7 @@ namespace Texode.Wpf.Tracker.Infrastructure
 
         void ICommand.Execute(object parameter)
         {
-            _targetExecuteMethod?.Invoke();
+            _execute?.Invoke();
         }
-        #endregion
     }
 }
