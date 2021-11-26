@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -6,11 +7,22 @@ namespace Texode.Wpf.Tracker.Models
 {
     public class User : INotifyPropertyChanged
     {
+        private int _id;
         private string _name;
         private int _averageSteps;
         private int _bestRezult;
         private int _worstRezult;
         private List<DayResult> _dayResults;
+
+        public int Id
+        {
+            get { return _id; }
+            set
+            {
+                _id = value;
+                OnPropertyChanged("Id");
+            }
+        }
 
         public string Name
         {
