@@ -105,7 +105,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Infrastructure\CategoryHighlightStyleSelector.cs" />
+    <Compile Include="Infrastructure\Export.cs" />
     <Compile Include="Infrastructure\RelayCommand.cs" />
+    <Compile Include="Infrastructure\Steps.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -1,7 +1,4 @@
-﻿using CsvHelper;
-using CsvHelper.Configuration;
-using Microsoft.Win32;
-using Microsoft.WindowsAPICodePack.Dialogs;
+﻿using Microsoft.Win32;
 using Newtonsoft.Json;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -10,15 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Xml.Serialization;
 using Texode.Wpf.Tracker.Infrastructure;
 using Texode.Wpf.Tracker.Models;
 
@@ -28,28 +21,13 @@ namespace Texode.Wpf.Tracker.ViewModels
     {
         private User _selectedUser;
         private RelayCommand _addCommand;
-        private RelayCommand _exportSelectedUserXMLCommand;
-        private RelayCommand _exportSelectedUserJsonCommand;
-        private RelayCommand _exportSelectedUserCSVCommand;
+        private RelayCommand<User> _exportSelectedUserXMLCommand;
+        private RelayCommand<User> _exportSelectedUserJsonCommand;
+        private RelayCommand<User> _exportSelectedUserCSVCommand;
         private PlotModel _model;
         private int _difference;
         private bool _isSelected;
         private bool _isUsersLoaded;
-        private readonly CommonOpenFileDialog dlg = new()
-        {
-            Title = "Выберите папку для экспорта",
-            IsFolderPicker = true,
-            InitialDirectory = Assembly.GetExecutingAssembly().Location,
-            AddToMostRecentlyUsedList = false,
-            AllowNonFileSystemItems = false,
-            DefaultDirectory = Assembly.GetExecutingAssembly().Location,
-            EnsureFileExists = true,
-            EnsurePathExists = true,
-            EnsureReadOnly = false,
-            EnsureValidNames = true,
-            Multiselect = false,
-            ShowPlacesList = true
-        };
 
         public ObservableCollection<User> Users { get; set; }
 
@@ -77,27 +55,27 @@ namespace Texode.Wpf.Tracker.ViewModels
             }
         }
 
-        public RelayCommand ExportSelectedUserXMLCommand
+        public RelayCommand<User> ExportSelectedUserXMLCommand
         {
             get
             {
-                return _exportSelectedUserXMLCommand ??= new RelayCommand(ExportSelectedUserXML, true);
+                return _exportSelectedUserXMLCommand ??= new RelayCommand<User>((method) => Export.ExportToXML(SelectedUser), true);
             }
         }
 
-        public RelayCommand ExportSelectedUserJsonCommand
+        public RelayCommand<User> ExportSelectedUserJsonCommand
         {
             get
             {
-                return _exportSelectedUserJsonCommand ??= new RelayCommand(ExportSelectedUserJson, true);
+                return _exportSelectedUserJsonCommand ??= new RelayCommand<User>((method) => Export.ExportToJson(SelectedUser), true);
             }
         }
 
-        public RelayCommand ExportSelectedUserCSVCommand
+        public RelayCommand<User> ExportSelectedUserCSVCommand
         {
             get
             {
-                return _exportSelectedUserCSVCommand ??= new RelayCommand(ExportSelectedUserCSV, true);
+                return _exportSelectedUserCSVCommand ??= new RelayCommand<User>((method) => Export.ExportToCSV(SelectedUser), true);
             }
         }
 
@@ -150,87 +128,6 @@ namespace Texode.Wpf.Tracker.ViewModels
             {
                 _isUsersLoaded = value;
                 OnPropertyChanged("IsUsersLoaded");
-            }
-        }
-
-        private void ExportSelectedUserXML()
-        {
-            if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                try
-                {
-                    XmlSerializer xmlSerializer = new(typeof(User));
-                    xmlSerializer.Serialize(File.Create(dlg.FileName + $"{_selectedUser.Name}-analysis results.XML"), _selectedUser);
-
-                    MessageBox.Show("Результаты успешно сохранены в файл *.XML");
-                }
-                catch { MessageBox.Show("Ошибка сохранения результатов"); }
-            }
-        }
-
-        private void ExportSelectedUserJson()
-        {
-            if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                try
-                {
-                    File.WriteAllText(
-                        dlg.FileName + $"{_selectedUser.Name}-analysis results.json",
-                        JsonConvert.SerializeObject(_selectedUser)
-                        );
-
-                    MessageBox.Show("Результаты успешно сохранены в файл *.json");
-                }
-                catch { MessageBox.Show("Ошибка сохранения результатов"); }
-            }
-        }
-
-        private void ExportSelectedUserCSV()
-        {
-            if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                try
-                {
-                    FileStream fileStream = new(dlg.FileName + $"{_selectedUser.Name}-analysis results.CSV", FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-
-                    using StreamWriter streamWriter = new(fileStream);
-
-                    using CsvWriter csvWriter = new(streamWriter,
-                        new CsvConfiguration(CultureInfo.InvariantCulture)
-                        {
-                            Encoding = Encoding.UTF8
-                        });
-
-                    csvWriter.WriteField("Name");
-                    csvWriter.WriteField(_selectedUser.Name);
-                    csvWriter.WriteField("Average");
-                    csvWriter.WriteField(_selectedUser.AverageSteps);
-                    csvWriter.WriteField("Best");
-                    csvWriter.WriteField(_selectedUser.BestRezult);
-                    csvWriter.WriteField("Worst");
-                    csvWriter.WriteField(_selectedUser.WorstResult);
-                    csvWriter.NextRecord();
-
-                    csvWriter.WriteField("Day");
-                    csvWriter.WriteField("Rank");
-                    csvWriter.WriteField("Status");
-                    csvWriter.WriteField("Steps");
-                    csvWriter.NextRecord();
-
-                    foreach (var dayResult in _selectedUser.DayResults)
-                    {
-                        csvWriter.WriteField(dayResult.Day);
-                        csvWriter.WriteField(dayResult.Rank);
-                        csvWriter.WriteField(dayResult.Status);
-                        csvWriter.WriteField(dayResult.Steps);
-                        csvWriter.NextRecord();
-                    }
-
-                    streamWriter.Flush();
-                }
-                catch { MessageBox.Show("Ошибка сохранения результатов"); }
-
-                MessageBox.Show("Результаты успешно сохранены в файл *.CSV");
             }
         }
 
@@ -294,9 +191,9 @@ namespace Texode.Wpf.Tracker.ViewModels
 
             foreach (var user in users)
             {
-                user.AverageSteps = GetAverageSteps(user, dayResults);
-                user.BestRezult = GetBestRezult(user, dayResults);
-                user.WorstResult = GetWorstRezult(user, dayResults);
+                user.AverageSteps = Steps.GetAverageSteps(user, dayResults);
+                user.BestRezult = Steps.GetBestRezult(user, dayResults);
+                user.WorstResult = Steps.GetWorstRezult(user, dayResults);
                 user.DayResults = GetDaysResults(user, dayResults);
             }
 
@@ -310,51 +207,6 @@ namespace Texode.Wpf.Tracker.ViewModels
             }
 
             return users;
-        }
-
-        private int GetAverageSteps(User user, List<List<DayResult>> dayResults)
-        {
-            int averageSteps = 0;
-
-            foreach (var day in dayResults)
-            {
-                if (day.FirstOrDefault(d => d.User == user.Name) is not null)
-                {
-                    averageSteps += day.FirstOrDefault(d => d.User == user.Name).Steps;
-                }
-            }
-
-            return averageSteps / dayResults.Count;
-        }
-
-        private int GetBestRezult(User user, List<List<DayResult>> dayResults)
-        {
-            int max = 0;
-
-            foreach (var day in dayResults)
-            {
-                if (day.FirstOrDefault(d => d.User == user.Name) is not null && day.FirstOrDefault(d => d.User == user.Name).Steps > max)
-                {
-                    max = day.FirstOrDefault(d => d.User == user.Name).Steps;
-                }
-            }
-
-            return max;
-        }
-
-        private int GetWorstRezult(User user, List<List<DayResult>> dayResults)
-        {
-            int min = user.BestRezult;
-
-            foreach (var day in dayResults)
-            {
-                if (day.FirstOrDefault(d => d.User == user.Name) is not null && day.FirstOrDefault(d => d.User == user.Name).Steps < min)
-                {
-                    min = day.FirstOrDefault(d => d.User == user.Name).Steps;
-                }
-            }
-
-            return min;
         }
 
         private List<DayResult> GetDaysResults(User user, List<List<DayResult>> dayResults)
