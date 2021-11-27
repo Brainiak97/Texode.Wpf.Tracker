@@ -399,7 +399,7 @@ namespace Texode.Wpf.Tracker.ViewModels
                     Position = AxisPosition.Bottom,
                     Minimum = 1,
                     Maximum = 30,
-                    Title = "Дни"
+                    Title = "День"
                 });
 
                 foreach (var dayresult in selectedUser.DayResults)
