@@ -37,7 +37,12 @@ namespace Texode.Wpf.Tracker.Infrastructure
                 try
                 {
                     XmlSerializer xmlSerializer = new(typeof(User));
-                    xmlSerializer.Serialize(File.Create(dlg.FileName + $"{_selectedUser.Name}-analysis results.XML"), _selectedUser);
+
+                    var file = File.Create(dlg.FileName + $"{_selectedUser.Name}-analysis results.XML");
+
+                    xmlSerializer.Serialize(file, _selectedUser);
+
+                    file?.Close();
 
                     MessageBox.Show("Результаты успешно сохранены в файл *.XML");
                 }
@@ -70,7 +75,7 @@ namespace Texode.Wpf.Tracker.Infrastructure
                 {
                     FileStream fileStream = new(dlg.FileName + $"{_selectedUser.Name}-analysis results.CSV", FileMode.Create, FileAccess.ReadWrite, FileShare.None);
 
-                    using StreamWriter streamWriter = new(fileStream);
+                    using StreamWriter streamWriter = new(fileStream, Encoding.UTF8);
 
                     using CsvWriter csvWriter = new(streamWriter,
                         new CsvConfiguration(CultureInfo.InvariantCulture)
